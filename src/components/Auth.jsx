@@ -40,6 +40,14 @@ export default function Auth({ onAuth }) {
         }
         const data = await r.json();
         onAuth(data.access_token);
+      } else if (mode === 'guest') {
+        const r = await fetch(`${base}/auth/guest`, { method: 'POST' });
+        if (!r.ok) {
+          const t = await r.text();
+          throw new Error(t || 'Guest login failed');
+        }
+        const data = await r.json();
+        onAuth(data.access_token);
       } else {
         const body = new URLSearchParams();
         body.set('username', email);
@@ -61,14 +69,23 @@ export default function Auth({ onAuth }) {
     <div className="max-w-md mx-auto bg-white/80 backdrop-blur rounded-xl shadow p-6">
       <h2 className="text-2xl font-bold text-center mb-4">כניסה מאובטחת</h2>
       <form onSubmit={submit} className="space-y-3" dir="rtl">
-        <input className="w-full border rounded px-3 py-2" placeholder="אימייל" value={email} onChange={e=>setEmail(e.target.value)} />
-        <input className="w-full border rounded px-3 py-2" placeholder="סיסמה" type="password" value={password} onChange={e=>setPassword(e.target.value)} />
+        {mode !== 'guest' && (
+          <>
+            <input className="w-full border rounded px-3 py-2" placeholder="אימייל" value={email} onChange={e=>setEmail(e.target.value)} />
+            <input className="w-full border rounded px-3 py-2" placeholder="סיסמה" type="password" value={password} onChange={e=>setPassword(e.target.value)} />
+          </>
+        )}
         {error && <p className="text-red-600 text-sm" dir="ltr">{error}</p>}
-        <button disabled={loading} className="w-full bg-blue-600 text-white rounded py-2 disabled:opacity-50">{loading ? '...' : (mode==='login' ? 'כניסה' : 'הרשמה')}</button>
+        <button disabled={loading} className="w-full bg-blue-600 text-white rounded py-2 disabled:opacity-50">{loading ? '...' : (mode==='login' ? 'כניסה' : mode==='register' ? 'הרשמה' : 'כניסה כאורח')}</button>
       </form>
-      <button onClick={()=>setMode(mode==='login'?'register':'login')} className="mt-3 text-blue-700 underline text-sm">
-        {mode==='login' ? 'חדש כאן? הרשמה' : 'יש לכם חשבון? כניסה'}
-      </button>
+      <div className="mt-3 flex items-center justify-between" dir="rtl">
+        <button onClick={()=>setMode(mode==='login'?'register':'login')} className="text-blue-700 underline text-sm">
+          {mode==='login' ? 'חדש כאן? הרשמה' : 'יש לכם חשבון? כניסה'}
+        </button>
+        <button onClick={()=>setMode('guest')} className="text-sm text-gray-700 hover:text-gray-900">
+          אורח
+        </button>
+      </div>
     </div>
   );
 }
