@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Hero from './components/Hero'
 import Auth from './components/Auth'
 import Dashboard from './components/Dashboard'
@@ -7,14 +7,23 @@ import Uploader from './components/Uploader'
 function App() {
   const [token, setToken] = useState('')
   const [started, setStarted] = useState(false)
+  const authRef = useRef(null)
+
+  useEffect(() => {
+    if (started && !token && authRef.current) {
+      authRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, [started, token])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       {!started ? (
         <Hero onGetStarted={()=>setStarted(true)} />
       ) : !token ? (
-        <div className="max-w-5xl mx-auto px-4 -mt-24 relative z-20">
-          <Auth onAuth={setToken} />
+        <div ref={authRef} className="max-w-5xl mx-auto px-4 pt-10 pb-20">
+          <div className="flex items-start justify-center">
+            <Auth onAuth={setToken} />
+          </div>
         </div>
       ) : (
         <div className="max-w-6xl mx-auto px-4 py-10 space-y-6">
